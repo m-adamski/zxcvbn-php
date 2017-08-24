@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-interface MatchInterface
-{
+interface MatchInterface {
 
     /**
      * Match this password.
@@ -12,13 +11,15 @@ interface MatchInterface
      *   Password to check for match.
      * @param array $userInputs
      *   Array of values related to the user (optional).
+     * @param array $options
+     *   Array with additional options.
      * @code
      *   array('Alice Smith')
      * @endcode
      * @return array
      *   Array of Match objects
      */
-    public static function match($password, array $userInputs = array());
+    public static function match($password, array $userInputs = array(), array $options = array());
 
     /**
      * Get entropy for this match's token.

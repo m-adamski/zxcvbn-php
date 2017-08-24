@@ -4,8 +4,7 @@ namespace ZxcvbnPhp;
 
 use ZxcvbnPhp\Matchers\Bruteforce;
 
-class Searcher
-{
+class Searcher {
 
     /**
      * @var
@@ -23,8 +22,7 @@ class Searcher
      * @return float
      *   Minimum entropy for non-overlapping best matches of a password.
      */
-    public function getMinimumEntropy($password, $matches)
-    {
+    public function getMinimumEntropy($password, $matches) {
         $passwordLength = strlen($password);
         $entropyStack = array();
         // for the optimal sequence of matches up to k, holds the final match (match.end == k).
@@ -38,7 +36,7 @@ class Searcher
             $entropyStack[$k] = $this->prevValue($entropyStack, $k) + $charEntropy;
             $backpointers[$k] = null;
             foreach ($matches as $match) {
-                if (!isset($match->begin) || $match->end != $k ) {
+                if (!isset($match->begin) || $match->end != $k) {
                     continue;
                 }
 
@@ -62,8 +60,7 @@ class Searcher
                 $matchSequence[] = $match;
 
                 $k = $match->begin - 1;
-            }
-            else {
+            } else {
                 $k -= 1;
             }
         }
@@ -101,9 +98,9 @@ class Searcher
      *
      * @return mixed
      */
-    protected function prevValue($array, $index)
-    {
+    protected function prevValue($array, $index) {
         $index = $index - 1;
+
         return ($index < 0 || $index >= count($array)) ? 0 : $array[$index];
     }
 
@@ -117,11 +114,11 @@ class Searcher
      *
      * @return Bruteforce match
      */
-    protected function makeBruteforceMatch($password, $begin, $end, $cardinality = null)
-    {
+    protected function makeBruteforceMatch($password, $begin, $end, $cardinality = null) {
         $match = new Bruteforce($password, $begin, $end, substr($password, $begin, $end + 1), $cardinality);
         // Set entropy in match.
         $match->getEntropy();
+
         return $match;
     }
 }

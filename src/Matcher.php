@@ -2,10 +2,21 @@
 
 namespace ZxcvbnPhp;
 
-use ZxcvbnPhp\Matchers\MatchInterface;
+class Matcher {
 
-class Matcher
-{
+    /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * Matcher constructor.
+     *
+     * @param array $options
+     */
+    public function __construct(array $options) {
+        $this->options = $options;
+    }
 
     /**
      * Get matches for a password.
@@ -20,15 +31,15 @@ class Matcher
      * @return array
      *   Array of Match objects.
      */
-    public function getMatches($password, array $userInputs = array())
-    {
+    public function getMatches($password, array $userInputs = array()) {
         $matches = array();
         foreach ($this->getMatchers() as $matcher) {
-            $matched = $matcher::match($password, $userInputs);
+            $matched = $matcher::match($password, $userInputs, $this->options);
             if (is_array($matched) && !empty($matched)) {
                 $matches = array_merge($matches, $matched);
             }
         }
+
         return $matches;
     }
 
@@ -38,8 +49,7 @@ class Matcher
      * @return array
      *   Array of classes implementing MatchInterface
      */
-    protected function getMatchers()
-    {
+    protected function getMatchers() {
         // @todo change to dynamic
         return array(
             'ZxcvbnPhp\Matchers\DateMatch',

@@ -6,10 +6,10 @@ use ZxcvbnPhp\Matchers\DictionaryMatch;
 
 /**
  * Class L33tMatch extends DictionaryMatch to translate l33t into dictionary words for matching.
+ *
  * @package ZxcvbnPhp\Matchers
  */
-class L33tMatch extends DictionaryMatch
-{
+class L33tMatch extends DictionaryMatch {
 
     /**
      * @var
@@ -32,8 +32,7 @@ class L33tMatch extends DictionaryMatch
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
         // Translate l33t password and dictionary match the translated password.
         $map = static::getSubstitutions($password);
         $indexSubs = array_filter($map);
@@ -61,6 +60,7 @@ class L33tMatch extends DictionaryMatch
                 $matches[] = new static($password, $result['begin'], $result['end'], $token, $result);
             }
         }
+
         return $matches;
     }
 
@@ -71,8 +71,7 @@ class L33tMatch extends DictionaryMatch
      * @param $token
      * @param array $params
      */
-    public function __construct($password, $begin, $end, $token, $params = array())
-    {
+    public function __construct($password, $begin, $end, $token, $params = array()) {
         parent::__construct($password, $begin, $end, $token, $params);
         $this->l33t = true;
         if (!empty($params)) {
@@ -84,31 +83,29 @@ class L33tMatch extends DictionaryMatch
     /**
      * @return float
      */
-    public function getEntropy()
-    {
+    public function getEntropy() {
         return parent::getEntropy() + $this->l33tEntropy();
     }
 
     /**
      * @return float
      */
-    protected function l33tEntropy()
-    {
+    protected function l33tEntropy() {
         $possibilities = 0;
         foreach ($this->sub as $subbed => $unsubbed) {
             $sLen = 0;
             $uLen = 0;
             // Count occurences of substituted and unsubstituted characters in the token.
             foreach (str_split($this->token) as $char) {
-                if ($char === (string) $subbed) {
+                if ($char === (string)$subbed) {
                     $sLen++;
                 }
-                if ($char === (string) $unsubbed) {
+                if ($char === (string)$unsubbed) {
                     $uLen++;
                 }
             }
             foreach (range(0, min($uLen, $sLen)) as $i) {
-                $possibilities += $this->binom($uLen + $sLen,  $i);
+                $possibilities += $this->binom($uLen + $sLen, $i);
             }
         }
 
@@ -116,6 +113,7 @@ class L33tMatch extends DictionaryMatch
         if ($possibilities <= 1) {
             return 1;
         }
+
         return $this->log($possibilities);
     }
 
@@ -124,12 +122,12 @@ class L33tMatch extends DictionaryMatch
      * @param array $map
      * @return string
      */
-    protected static function translate($string, $map)
-    {
+    protected static function translate($string, $map) {
         $out = '';
         foreach (range(0, strlen($string) - 1) as $i) {
             $out .= !empty($map[$i]) ? $map[$i] : $string[$i];
         }
+
         return $out;
     }
 
@@ -137,8 +135,7 @@ class L33tMatch extends DictionaryMatch
      * @param string $password
      * @return array
      */
-    protected static function getSubstitutions($password)
-    {
+    protected static function getSubstitutions($password) {
         $map = array();
 
         $l33t = array(

@@ -2,8 +2,8 @@
 
 namespace ZxcvbnPhp;
 
-class Zxcvbn
-{
+class Zxcvbn {
+
     /**
      * @var
      */
@@ -19,11 +19,10 @@ class Zxcvbn
      */
     protected $matcher;
 
-    public function __construct()
-    {
+    public function __construct(array $options = array()) {
         $this->scorer = new \ZxcvbnPhp\Scorer();
         $this->searcher = new \ZxcvbnPhp\Searcher();
-        $this->matcher = new \ZxcvbnPhp\Matcher();
+        $this->matcher = new \ZxcvbnPhp\Matcher($options);
     }
 
     /**
@@ -41,11 +40,11 @@ class Zxcvbn
      *     match_sequence
      *     score
      */
-    public function passwordStrength($password, array $userInputs = array())
-    {
+    public function passwordStrength($password, array $userInputs = array()) {
         $timeStart = microtime(true);
         if (strlen($password) === 0) {
             $timeStop = microtime(true) - $timeStart;
+
             return $this->result($password, 0, array(), 0, array('calc_time' => $timeStop));
         }
 
@@ -63,6 +62,7 @@ class Zxcvbn
         $timeStop = microtime(true) - $timeStart;
         // Include metrics and calculation time.
         $params = array_merge($metrics, array('calc_time' => $timeStop));
+
         return $this->result($password, $entropy, $bestMatches, $score, $params);
     }
 
@@ -84,6 +84,7 @@ class Zxcvbn
             'match_sequence' => $matches,
             'score'          => $score
         );
+
         return array_merge($params, $r);
     }
 

@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-class DictionaryMatch extends Match
-{
+class DictionaryMatch extends Match {
 
     /**
      * @var
@@ -25,10 +24,17 @@ class DictionaryMatch extends Match
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
+
         $matches = array();
-        $dicts = static::getRankedDictionaries();
+
+        // Define additional options
+        $optionMerge = isset($options["dictionary"]["merge"]) ? $options["dictionary"]["merge"] : false;
+        $optionDictionaries = isset($options["dictionary"]["files"]) ? $options["dictionary"]["files"] : [];
+
+        // Get dictionaries content
+        $dicts = static::getRankedDictionaries($optionDictionaries, $optionMerge);
+
         if (!empty($userInputs)) {
             $dicts['user_inputs'] = array();
             foreach ($userInputs as $rank => $input) {
@@ -36,6 +42,7 @@ class DictionaryMatch extends Match
                 $dicts['user_inputs'][$input_lower] = $rank;
             }
         }
+
         foreach ($dicts as $name => $dict) {
             $results = static::dictionaryMatch($password, $dict);
             foreach ($results as $result) {
@@ -43,6 +50,7 @@ class DictionaryMatch extends Match
                 $matches[] = new static($password, $result['begin'], $result['end'], $result['token'], $result);
             }
         }
+
         return $matches;
     }
 
@@ -53,8 +61,7 @@ class DictionaryMatch extends Match
      * @param $token
      * @param array $params
      */
-    public function __construct($password, $begin, $end, $token, $params = array())
-    {
+    public function __construct($password, $begin, $end, $token, $params = array()) {
         parent::__construct($password, $begin, $end, $token);
         $this->pattern = 'dictionary';
         if (!empty($params)) {
@@ -67,19 +74,17 @@ class DictionaryMatch extends Match
     /**
      * @return float
      */
-    public function getEntropy()
-    {
+    public function getEntropy() {
         return $this->log($this->rank) + $this->uppercaseEntropy();
     }
 
     /**
      * @return float
      */
-    protected function uppercaseEntropy()
-    {
+    protected function uppercaseEntropy() {
         $token = $this->token;
         // Return if token is all lowercase.
-        if ($token === strtolower($token)){
+        if ($token === strtolower($token)) {
             return 0;
         }
 
@@ -113,8 +118,8 @@ class DictionaryMatch extends Match
         }
 
         $possibilities = 0;
-        foreach (range(0, min($uLen, $lLen ) + 1) as $i) {
-            $possibilities += $this->binom($uLen + $lLen,  $i);
+        foreach (range(0, min($uLen, $lLen) + 1) as $i) {
+            $possibilities += $this->binom($uLen + $lLen, $i);
         }
 
         return $this->log($possibilities);
@@ -123,11 +128,11 @@ class DictionaryMatch extends Match
     /**
      * Match password in a dictionary.
      *
-     * @param string $password
-     * @param array $dict
+     * @param $password
+     * @param $dict
+     * @return array
      */
-    protected static function dictionaryMatch($password, $dict)
-    {
+    protected static function dictionaryMatch($password, $dict) {
         $result = array();
         $length = strlen($password);
 
@@ -139,11 +144,11 @@ class DictionaryMatch extends Match
 
                 if (isset($dict[$word])) {
                     $result[] = array(
-                        'begin' => $i,
-                        'end' => $j,
-                        'token' => substr($password, $i, $j - $i + 1),
+                        'begin'        => $i,
+                        'end'          => $j,
+                        'token'        => substr($password, $i, $j - $i + 1),
                         'matched_word' => $word,
-                        'rank' => $dict[$word],
+                        'rank'         => $dict[$word],
                     );
                 }
             }
@@ -155,11 +160,37 @@ class DictionaryMatch extends Match
     /**
      * Load ranked frequency dictionaries.
      *
-     * @return array
+     * @param array $additionalFiles
+     * @param bool $merge
+     * @return mixed
      */
-    protected static function getRankedDictionaries()
-    {
-        $data = file_get_contents(dirname(__FILE__) . '/ranked_frequency_lists.json');
-        return json_decode($data, true);
+    protected static function getRankedDictionaries(array $additionalFiles = array(), bool $merge = false) {
+
+        // Read base data file content
+        $baseFileContent = file_get_contents(dirname(__FILE__) . '/ranked_frequency_lists.json');
+
+        // Decode json into array
+        $dataArray = json_decode($baseFileContent, true);
+
+        if ($merge && is_array($additionalFiles) && count($additionalFiles) > 0) {
+
+            // Move every file
+            foreach ($additionalFiles as $additionalFile) {
+
+                if (file_exists($additionalFile)) {
+
+                    // Read additional file content & decode it into array
+                    if ($additionalContent = file_get_contents($additionalFile)) {
+
+                        // Decode content into array
+                        if ($additionalContentArray = json_decode($additionalContent, true)) {
+                            $dataArray = array_merge_recursive($dataArray, $additionalContentArray);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $dataArray;
     }
 }

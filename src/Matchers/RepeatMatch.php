@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-class RepeatMatch extends Match
-{
+class RepeatMatch extends Match {
 
     /**
      * @var
@@ -15,8 +14,7 @@ class RepeatMatch extends Match
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
         $groups = static::group($password);
         $matches = array();
 
@@ -32,6 +30,7 @@ class RepeatMatch extends Match
             }
             $k += $length;
         }
+
         return $matches;
     }
 
@@ -41,8 +40,7 @@ class RepeatMatch extends Match
      * @param $end
      * @param $token
      */
-    public function __construct($password, $begin, $end, $token, $char)
-    {
+    public function __construct($password, $begin, $end, $token, $char) {
         parent::__construct($password, $begin, $end, $token);
         $this->pattern = 'repeat';
         $this->repeatedChar = $char;
@@ -51,11 +49,11 @@ class RepeatMatch extends Match
     /**
      * @return float
      */
-    public function getEntropy()
-    {
+    public function getEntropy() {
         if (is_null($this->entropy)) {
-           $this->entropy = $this->log($this->getCardinality() * strlen($this->token));
+            $this->entropy = $this->log($this->getCardinality() * strlen($this->token));
         }
+
         return $this->entropy;
     }
 
@@ -65,8 +63,7 @@ class RepeatMatch extends Match
      * @param string $string
      * @return array
      */
-    protected static function group($string)
-    {
+    protected static function group($string) {
         $grouped = array();
         $chars = str_split($string);
 
@@ -75,13 +72,13 @@ class RepeatMatch extends Match
         foreach ($chars as $char) {
             if ($prevChar === $char) {
                 $grouped[$i - 1] .= $char;
-            }
-            else {
+            } else {
                 $grouped[$i] = $char;
                 $i++;
                 $prevChar = $char;
             }
         }
+
         return $grouped;
     }
 }

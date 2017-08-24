@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-class SequenceMatch extends Match
-{
+class SequenceMatch extends Match {
 
     const LOWER = 'abcdefghijklmnopqrstuvwxyz';
     const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -29,8 +28,7 @@ class SequenceMatch extends Match
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
         $matches = array();
         $passwordLength = strlen($password);
 
@@ -50,27 +48,27 @@ class SequenceMatch extends Match
                 $remainder = substr($password, $j + 1);
                 $pattern .= static::intersect($sequences, $remainder, $pos + 3);
                 $params = array(
-                    'ascending' => true,
-                    'sequenceName' => static::getSequenceName($pos),
+                    'ascending'     => true,
+                    'sequenceName'  => static::getSequenceName($pos),
                     'sequenceSpace' => static::getSequenceSpace($pos),
                 );
                 $matches[] = new static($password, $i, $i + strlen($pattern) - 1, $pattern, $params);
                 // Skip intersecting characters on next loop.
                 $i += strlen($pattern) - 1;
-            }
-            // Search the reverse sequence for pattern.
+            } // Search the reverse sequence for pattern.
             elseif ($pattern && ($pos = strpos($revSequences, $pattern)) !== false) {
                 $remainder = substr($password, $j + 1);
                 $pattern .= static::intersect($revSequences, $remainder, $pos + 3);
                 $params = array(
-                    'ascending' => false,
-                    'sequenceName' => static::getSequenceName($pos),
+                    'ascending'     => false,
+                    'sequenceName'  => static::getSequenceName($pos),
                     'sequenceSpace' => static::getSequenceSpace($pos),
                 );
                 $matches[] = new static($password, $i, $i + strlen($pattern) - 1, $pattern, $params);
                 $i += strlen($pattern) - 1;
             }
         }
+
         return $matches;
     }
 
@@ -81,8 +79,7 @@ class SequenceMatch extends Match
      * @param $token
      * @param array $params
      */
-    public function __construct($password, $begin, $end, $token, $params = array())
-    {
+    public function __construct($password, $begin, $end, $token, $params = array()) {
         parent::__construct($password, $begin, $end, $token);
         $this->pattern = 'sequence';
         if (!empty($params)) {
@@ -95,22 +92,18 @@ class SequenceMatch extends Match
     /**
      * @copydoc Match::getEntropy()
      */
-    public function getEntropy()
-    {
+    public function getEntropy() {
         $char = $this->token[0];
         if ($char === 'a' || $char === '1') {
             $entropy = 1;
-        }
-        else {
+        } else {
             $ord = ord($char);
 
             if ($this->isDigit($ord)) {
                 $entropy = $this->log(10);
-            }
-            elseif ($this->isLower($ord)) {
+            } elseif ($this->isLower($ord)) {
                 $entropy = $this->log(26);
-            }
-            else {
+            } else {
                 $entropy = $this->log(26) + 1; // Extra bit for upper.
             }
         }
@@ -137,14 +130,14 @@ class SequenceMatch extends Match
         foreach ($cut as $i => $c) {
             if ($comp[$i] === $c) {
                 $intersect[] = $c;
-            }
-            else {
+            } else {
                 break; // Stop loop since intersection ends.
             }
         }
         if (!empty($intersect)) {
             return implode('', $intersect);
         }
+
         return '';
     }
 
@@ -153,8 +146,7 @@ class SequenceMatch extends Match
      * @param bool $reverse
      * @return int
      */
-    protected static function getSequenceSpace($pos, $reverse = false)
-    {
+    protected static function getSequenceSpace($pos, $reverse = false) {
         $name = static::getSequenceName($pos, $reverse);
         switch ($name) {
             case 'lower':
@@ -173,26 +165,20 @@ class SequenceMatch extends Match
      * @param bool $reverse
      * @return string
      */
-    protected static function getSequenceName($pos, $reverse = false)
-    {
+    protected static function getSequenceName($pos, $reverse = false) {
         $sequences = self::LOWER . self::UPPER . self::DIGITS;
         $end = strlen($sequences);
         if (!$reverse && $pos < strlen(self::LOWER)) {
             return 'lower';
-        }
-        elseif (!$reverse && $pos <= $end - strlen(self::DIGITS)) {
+        } elseif (!$reverse && $pos <= $end - strlen(self::DIGITS)) {
             return 'upper';
-        }
-        elseif (!$reverse) {
+        } elseif (!$reverse) {
             return 'digits';
-        }
-        elseif ($pos < strlen(self::DIGITS)) {
+        } elseif ($pos < strlen(self::DIGITS)) {
             return 'digits';
-        }
-        elseif ($pos <= $end - strlen(self::LOWER)) {
+        } elseif ($pos <= $end - strlen(self::LOWER)) {
             return 'upper';
-        }
-        else {
+        } else {
             return 'lower';
         }
     }

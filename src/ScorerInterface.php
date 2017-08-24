@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp;
 
-interface ScorerInterface
-{
+interface ScorerInterface {
 
     /**
      * Score for a password's bits of entropy.

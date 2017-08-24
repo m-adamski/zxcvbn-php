@@ -2,8 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-class YearMatch extends Match
-{
+class YearMatch extends Match {
 
     const NUM_YEARS = 119;
 
@@ -12,13 +11,13 @@ class YearMatch extends Match
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
         $matches = array();
         $groups = static::findAll($password, "/(19\d\d|200\d|201\d)/");
         foreach ($groups as $captures) {
             $matches[] = new static($password, $captures[1]['begin'], $captures[1]['end'], $captures[1]['token']);
         }
+
         return $matches;
     }
 
@@ -28,8 +27,7 @@ class YearMatch extends Match
      * @param $end
      * @param $token
      */
-    public function __construct($password, $begin, $end, $token)
-    {
+    public function __construct($password, $begin, $end, $token) {
         parent::__construct($password, $begin, $end, $token);
         $this->pattern = 'year';
     }
@@ -37,11 +35,11 @@ class YearMatch extends Match
     /**
      * @return float
      */
-    public function getEntropy()
-    {
+    public function getEntropy() {
         if (is_null($this->entropy)) {
             $this->entropy = $this->log(self::NUM_YEARS);
         }
+
         return $this->entropy;
     }
 }

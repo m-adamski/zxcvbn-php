@@ -4,10 +4,10 @@ namespace ZxcvbnPhp\Matchers;
 
 /**
  * Class SpatialMatch.
+ *
  * @package ZxcvbnPhp\Matchers
  */
-class SpatialMatch extends Match
-{
+class SpatialMatch extends Match {
 
     /**
      * @var
@@ -49,8 +49,7 @@ class SpatialMatch extends Match
      *
      * @copydoc Match::match()
      */
-    public static function match($password, array $userInputs = array())
-    {
+    public static function match($password, array $userInputs = array(), array $options = array()) {
 
         $matches = array();
         $graphs = static::getAdjacencyGraphs();
@@ -61,6 +60,7 @@ class SpatialMatch extends Match
                 $matches[] = new static($password, $result['begin'], $result['end'], $result['token'], $result);
             }
         }
+
         return $matches;
     }
 
@@ -71,8 +71,7 @@ class SpatialMatch extends Match
      * @param $token
      * @param array $params
      */
-    public function __construct($password, $begin, $end, $token, $params = array())
-    {
+    public function __construct($password, $begin, $end, $token, $params = array()) {
         parent::__construct($password, $begin, $end, $token);
         $this->pattern = 'spatial';
         $this->graph = $params['graph'];
@@ -92,13 +91,11 @@ class SpatialMatch extends Match
      *
      * @return float
      */
-    public function getEntropy()
-    {
-        if ($this->graph  === 'qwerty' || $this->graph === 'dvorak' ) {
+    public function getEntropy() {
+        if ($this->graph === 'qwerty' || $this->graph === 'dvorak') {
             $startingPos = $this->keyboardStartingPos;
             $avgDegree = $this->keyboardAvgDegree;
-        }
-        else {
+        } else {
             $startingPos = $this->keypadStartingPos;
             $avgDegree = $this->keypadAvgDegree;
         }
@@ -125,6 +122,7 @@ class SpatialMatch extends Match
             }
             $entropy += $this->log($possibilities);
         }
+
         return $entropy;
     }
 
@@ -134,8 +132,7 @@ class SpatialMatch extends Match
      * @param string $password
      * @param array $graph
      */
-    protected static function graphMatch($password, $graph)
-    {
+    protected static function graphMatch($password, $graph) {
         $result = array();
         $i = 0;
 
@@ -155,7 +152,7 @@ class SpatialMatch extends Match
                 // Consider growing pattern by one character if j hasn't gone over the edge.
                 if ($j < $passwordLength) {
                     $curChar = $password[$j];
-                    foreach ($adjacents as $adj ) {
+                    foreach ($adjacents as $adj) {
                         $curDirection += 1;
                         $curCharPos = static::indexOf($adj, $curChar);
                         if ($adj && $curCharPos !== -1) {
@@ -182,16 +179,15 @@ class SpatialMatch extends Match
                 // if the current pattern continued, extend j and try to grow again
                 if ($found) {
                     $j += 1;
-                }
-                // otherwise push the pattern discovered so far, if any...
+                } // otherwise push the pattern discovered so far, if any...
                 else {
                     // Ignore length 1 or 2 chains.
-                    if ($j - $i > 2)  {
+                    if ($j - $i > 2) {
                         $result[] = array(
-                            'begin' => $i,
-                            'end' => $j - 1,
-                            'token' => substr($password, $i, $j - $i),
-                            'turns' => $turns,
+                            'begin'         => $i,
+                            'end'           => $j - 1,
+                            'token'         => substr($password, $i, $j - $i),
+                            'turns'         => $turns,
                             'shifted_count' => $shiftedCount
                         );
                     }
@@ -213,9 +209,9 @@ class SpatialMatch extends Match
      *
      * @return int
      */
-    protected static function indexOf($string, $char)
-    {
+    protected static function indexOf($string, $char) {
         $pos = @strpos($string, $char);
+
         return ($pos === false ? -1 : $pos);
     }
 
@@ -226,8 +222,7 @@ class SpatialMatch extends Match
      *
      * @return float
      */
-    protected static function calcAverageDegree($graph)
-    {
+    protected static function calcAverageDegree($graph) {
         $sum = 0;
         foreach ($graph as $neighbors) {
             foreach ($neighbors as $neighbor) {
@@ -237,6 +232,7 @@ class SpatialMatch extends Match
                 }
             }
         }
+
         return $sum / count(array_keys($graph));
     }
 
@@ -245,9 +241,9 @@ class SpatialMatch extends Match
      *
      * @return array
      */
-    protected static function getAdjacencyGraphs()
-    {
+    protected static function getAdjacencyGraphs() {
         $data = file_get_contents(dirname(__FILE__) . '/adjacency_graphs.json');
+
         return json_decode($data, true);
     }
 }
