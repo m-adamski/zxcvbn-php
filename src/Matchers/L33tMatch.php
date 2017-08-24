@@ -33,28 +33,43 @@ class L33tMatch extends DictionaryMatch {
      * @copydoc Match::match()
      */
     public static function match($password, array $userInputs = array(), array $options = array()) {
+
         // Translate l33t password and dictionary match the translated password.
         $map = static::getSubstitutions($password);
         $indexSubs = array_filter($map);
+
         if (empty($indexSubs)) {
             return array();
         }
+
         $translatedWord = static::translate($password, $map);
 
         $matches = array();
-        $dicts = static::getRankedDictionaries();
+
+        // Define additional options
+        $optionMerge = isset($options["dictionary"]["merge"]) ? $options["dictionary"]["merge"] : false;
+        $optionDictionaries = isset($options["dictionary"]["files"]) ? $options["dictionary"]["files"] : [];
+
+        // Get dictionaries content
+        $dicts = static::getRankedDictionaries($optionDictionaries, $optionMerge);
+
         foreach ($dicts as $name => $dict) {
+
             $results = static::dictionaryMatch($translatedWord, $dict);
             foreach ($results as $result) {
+
                 // Set substituted elements.
                 $result['sub'] = array();
                 $result['sub_display'] = array();
+
                 foreach ($indexSubs as $i => $t) {
                     $result['sub'][$password[$i]] = $t;
                     $result['sub_display'][] = "$password[$i] -> $t";
                 }
+
                 $result['sub_display'] = implode(', ', $result['sub_display']);
                 $result['dictionary_name'] = $name;
+
                 // Replace translated token with orignal password token.
                 $token = substr($password, $result['begin'], $result['end'] - $result['begin'] + 1);
                 $matches[] = new static($password, $result['begin'], $result['end'], $token, $result);
